@@ -23,9 +23,13 @@ contract SecurityTokenDraft is ERC20 {
 
   mapping (address => uint) private _idbalances;
 
-  constructor(string memory _symbol, string memory _name, uint256 _totalSupply, address _registry) public {
+  constructor(string memory _symbol, string memory _name, uint256 _totalSupply, address _registry, 
+    uint _limitUS, uint _limitNotAccredited, uint _limitTotal) public {
     name = _name;
     symbol = _symbol;
+    limitUS = _limitUS;
+    limitNotAccredited = _limitNotAccredited;
+    limitTotal = _limitTotal;
     registry = IIdentityRegistry(_registry);
     require(_secmint(msg.sender, _totalSupply));
     _mint(msg.sender, _totalSupply);
