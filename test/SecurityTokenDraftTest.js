@@ -59,9 +59,9 @@ contract('IdentityRegistry', (accounts) => {
             let checkName = await STO.name();
             let checkTotalSupply = await STO.totalSupply();
 
-            assert(checkContractOwner == contractOwner);
-            assert(checkSymbol == symbol);
-            assert(checkName == name);
+            assert.equal(checkContractOwner, contractOwner);
+            assert.equal(checkSymbol, symbol);
+            assert.equal(checkName, name);
             assert(checkTotalSupply.eq(totalSupply));
         });
 
