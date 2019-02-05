@@ -3,9 +3,9 @@ let IR;
 
 const web3 = global.web3;
 
-const tbn = v => web3.toBigNumber(v);
+const tbn = v => web3.utils.toBN(v);
 const fbn = v => v.toString();
-const tw = v => web3.toBigNumber(v).mul(1e18);
+const tw = v => web3.utils.toBN(v).mul(1e18);
 const fw = v => web3._extend.utils.fromWei(v).toString();
 
 contract('IdentityRegistry', (accounts) => {
