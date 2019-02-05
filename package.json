@@ -42,15 +42,16 @@
     "eslint-plugin-standard": "^3.0.1",
     "ethereumjs-testrpc": "^6.0.1",
     "ethereumjs-util": "^5.1.2",
+    "openzeppelin-solidity": "2.1.1",
+    "solc": "0.5.2",
     "solidity-coverage": "^0.4.3",
     "solium": "^1.1.2",
     "truffle": "^5.0.1",
-    "truffle-hdwallet-provider": "0.0.3",
-    "openzeppelin-solidity": "2.1.1",
-    "solc": "0.5.2"
+    "truffle-hdwallet-provider": "0.0.3"
   },
   "dependencies": {
     "dotenv": "^4.0.0",
-    "ethjs-abi": "^0.2.1"
+    "ethjs-abi": "^0.2.1",
+    "truffle-assertions": "^0.7.2"
   }
 }
