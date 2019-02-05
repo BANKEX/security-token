@@ -11,7 +11,7 @@ const fbn = v => v.toString();
 const tw = v => web3.utils.toBN(v).mul(1e18);
 const fw = v => web3._extend.utils.fromWei(v).toString();
 
-const gasPrice = tw(3e-7);
+// const gasPrice = tw(3e-7);
 
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
