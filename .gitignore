@@ -34,6 +34,6 @@ build/
 
 # lol macs
 .DS_Store/
-
+.idea
 
 dist.sol

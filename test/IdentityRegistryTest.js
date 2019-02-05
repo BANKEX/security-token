@@ -54,16 +54,16 @@ contract('IdentityRegistry', (accounts) => {
     });
 
     describe('NEGATIVE TEST', () => {
-        it("should fail when setting identity from not contract owner", async function() {
+        it("should fail when identity is set not from contract owner", async function() {
              await truffleAssert.fails(IR.addIdentity("0x215AF1db51B915AddbaaAC756b871F725Bcc77be", true, false, {from: "0x215AF1db51B915AddbaaAC756b871F725Bcc77be"}))
         });
 
-        it("should fail when setting identity using existing ID", async function() {
+        it("should fail when identity is set using the existing ID", async function() {
             await IR.addIdentity("0x524c994069630a5ddfe0216c571b5c80983d7fcb", true, true, {from: contractOwner})
             await truffleAssert.fails(IR.addIdentity("0x524c994069630a5ddfe0216c571b5c80983d7fcb", true, true, {from: contractOwner}))
         });
 
-        it("should fail when setting identity with bad argunents", async function() {
+        it("should fail when identity is set with unapproptiate arguments", async function() {
             await truffleAssert.fails(IR.addIdentity("0x524c994069630a5ddfe0216c57", true, true, {from: contractOwner}))
 
             // todo: check 
@@ -71,23 +71,23 @@ contract('IdentityRegistry', (accounts) => {
             // await truffleAssert.fails(IR.addIdentity("0x524c994069630a5ddfe0216c571b5c80983d7fcb", 1000, 1, {from: contractOwner}))
         });
 
-        it("should fail when bind address not from contract owner", async function() {
+        it("should fail when bind address is not from contract owner", async function() {
             await truffleAssert.fails(IR.bindAddress("0x524c994069630a5ddfe0216c571b5c80983d7fcb", "0x524c994069630a5ddfe0216c571b5c80983d7fcb", {from: "0x524c994069630a5ddfe0216c571b5c80983d7fcb"}))
         });
 
-        it("should fail when re-bind address of existing account id", async function() {
+        it("should fail when the address is rebind", async function() {
             await IR.bindAddress("0x524c994069630a5ddfe0216c571b5c80983d7fcb", "0x524c994069630a5ddfe0216c571b5c80983d7fcb", {from: accounts[0]})
             await truffleAssert.fails(IR.bindAddress("0x524c994069630a5ddfe0216c571b5c80983d7fcb", "0x524c994069630a5ddfe0216c571b5c80983d7fcb", {from: accounts[0]}))
         });
 
-        it("should fail when bind address with bad arguments", async function() {
+        it("should fail when address is binded with unapproptiate arguments", async function() {
             await truffleAssert.fails(IR.bindAddress("0x524c994069630a5ddfe0216c571", "0x524c994069630a5ddfe0216c571b5c80983d7fcb", {from: accounts[0]}))
             await truffleAssert.fails(IR.bindAddress("0x524c994069630a5ddfe0216c571b5c80983d7fcb", "0x524c994069630a5ddfe0216c571", {from: accounts[0]}))
             await truffleAssert.fails(IR.bindAddress(true, "0x524c994069630a5ddfe0216c571", {from: accounts[0]}))
             await truffleAssert.fails(IR.bindAddress("0x524c994069630a5ddfe0216c571b5c80983d7fcb", 100, {from: accounts[0]}))
         });
 
-        it("should fail when getIdentity with bad argument", async function() {
+        it("should fail when identity with unapproptiate argument is gotten", async function() {
             await truffleAssert.fails(IR.getIdentity("0x524c994069630a5ddfe0216c571"))
             await truffleAssert.fails(IR.getIdentity(true))
             await truffleAssert.fails(IR.getIdentity(100))
