@@ -6,18 +6,18 @@ let IR;
 
 const web3 = global.web3;
 
-const tbn = v => web3.utils.toBN(v);
+const tbn = v => new web3.utils.BN(v.toString(), 10);
 const fbn = v => v.toString();
-const tw = v => web3.utils.toBN(v).mul(1e18);
-const fw = v => web3._extend.utils.fromWei(v).toString();
+const tw = v => new web3.utils.BN(v.toString(), 10).mul(new web3.utils.BN(1e18.toString(), 10));
+const fw = v => web3.extend.utils.fromWei(v).toString();
 
-// const gasPrice = tw(3e-7);
+const gasPrice = tw(3e-7);
 
 function getRandom(min, max) {
     return Math.random() * (max - min) + min;
 }
 
-contract('IdentityRegistry', (accounts) => {
+contract('SecurityTokenDraft', (accounts) => {
 
     let contractOwner = accounts[0];
     let symbol = "TST";
