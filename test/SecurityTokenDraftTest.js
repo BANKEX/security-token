@@ -6,15 +6,15 @@ let IR;
 
 const web3 = global.web3;
 
-const tbn = v => new web3.utils.BN(v.toString(), 10);
+const tbn = v => web3.utils.toBN(v);
 const fbn = v => v.toString();
-const tw = v => new web3.utils.BN(v.toString(), 10).mul(new web3.utils.BN(1e18.toString(), 10));
-const fw = v => web3.extend.utils.fromWei(v).toString();
+const tw = v => web3.utils.toWei(v.toString());
+const fw = v => web3.utils.fromWei(v.toString());
 
-const gasPrice = tw(3e-7);
+const gasPrice = tw("0.0000003");
 
 function getRandom(min, max) {
-    return Math.random() * (max - min) + min;
+    return (Math.random() * (max - min) + min).toFixed();
 }
 
 contract('SecurityTokenDraft', (accounts) => {
@@ -66,30 +66,67 @@ contract('SecurityTokenDraft', (accounts) => {
         });
 
         it("should transfer from contract owner", async function() {
-            // let transferAmount = new Array(9)
-            // console.log(transferAmount)
-            //     // .map(() => {
-            //     //     return getRandom(1, totalSupply);
-            //     // });
-            //
-            //
-            // for (let i = 1; i < accounts.length; i++) {
-            //     let tx = await STO.transfer(accounts[i], transferAmount[i], {from: contractOwner, gasPrice: gasPrice});
-            //     let gasUsed = tx.receipt.gasUsed;
-            //     let gasCost = gasPrice.mul(gasUsed);
-            // }
-            //
-            // console.log(tx)
+            let transferAmount = new Array(accounts.length);
+            let totalTransferedAmount = tbn(0);
+            for (let i = 1; i < transferAmount.length; i++) {
+                let val = getRandom(1, totalSupply/accounts.length);
+                totalTransferedAmount = totalTransferedAmount.add(tbn(val));
+                transferAmount[i] = val;
+            }
+
+            let balancesBefore = new Array(accounts.length);
+            for (let i = 0; i < accounts.length; i++)
+                balancesBefore[i] = await STO.balanceOf(accounts[i]);
+
+            for (let i = 1; i < accounts.length; i++)
+                await STO.transfer(accounts[i], transferAmount[i], {from: contractOwner, gasPrice: gasPrice});
+
+            let balancesAfter = new Array(accounts.length);
+            for (let i = 0; i < accounts.length; i++)
+                balancesAfter[i] = await STO.balanceOf(accounts[i]);
+
+            assert.equal(balancesBefore[0].toString(), balancesAfter[0].add(totalTransferedAmount).toString());
+            for (let i = 1; i < accounts.length; i++)
+                assert.equal(balancesAfter[i].toString(), transferAmount[i].toString());
+        });
+
+        it("should transferFrom not from contract owner", async function() {
+
         });
 
     });
 
     describe('NEGATIVE TEST', () => {
+        it("should overflow limitTotal", async function() {
 
+        });
+
+        it("should overflow limitNotAccredited", async function() {
+
+        });
+
+        it("should overflow limitUS", async function() {
+
+        });
+
+        it("should failed when transfer amount < allowed (transfer)", async function() {
+
+        });
+
+        it("should failed when transfer amount < allowed (transferFrom)", async function() {
+
+        });
+
+        it("should failed when transfer from not US to US", async function() {
+
+        });
     });
 
     describe('INTEGRATION TEST', () => {
+        it("should transfer from different accounts", async function() {
+            // have to addIdentity for different account and transfer
 
+        });
     });
 
 });

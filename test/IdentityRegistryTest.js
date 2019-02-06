@@ -5,10 +5,10 @@ let IR;
 
 const web3 = global.web3;
 
-const tbn = v => new web3.utils.BN(v.toString(), 10);
+const tbn = v => web3.utils.toBN(v);
 const fbn = v => v.toString();
-const tw = v => new web3.utils.BN(v.toString(), 10).mul(new web3.utils.BN(1e18.toString(), 10));
-const fw = v => web3.extend.utils.fromWei(v).toString();
+const tw = v => web3.utils.toWei(v.toString());
+const fw = v => web3.utils.fromWei(v.toString());
 
 contract('IdentityRegistry', (accounts) => {
 
