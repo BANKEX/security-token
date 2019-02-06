@@ -13,11 +13,16 @@ const fw = v => web3.utils.fromWei(v.toString());
 
 const gasPrice = tw("0.0000003");
 
+
+
+
 function getRandom(min, max) {
     return (Math.random() * (max - min) + min).toFixed();
 }
 
 contract('SecurityTokenDraft', (accounts) => {
+
+    
 
     let contractOwner = accounts[0];
     let symbol = "TST";
@@ -27,6 +32,31 @@ contract('SecurityTokenDraft', (accounts) => {
     let limitUS = tbn(5);
     let limitNotAccredited = tbn(2);
     let totalLimit = tbn(9);
+
+    async function Transfer(address){
+        let transferAmount = new Array(accounts.length);
+        let totalTransferedAmount = tbn(0);
+        for (let i = 1; i < transferAmount.length; i++) {
+            let val = getRandom(1, totalSupply/accounts.length);
+            totalTransferedAmount = totalTransferedAmount.add(tbn(val));
+            transferAmount[i] = val;
+        }
+    
+        let balancesBefore = new Array(accounts.length);
+        for (let i = 0; i < accounts.length; i++)
+            balancesBefore[i] = await STO.balanceOf(accounts[i]);
+    
+        for (let i = 1; i < accounts.length; i++)
+            await STO.transfer(accounts[i], transferAmount[i], {from: address, gasPrice: gasPrice});
+    
+        let balancesAfter = new Array(accounts.length);
+        for (let i = 0; i < accounts.length; i++)
+            balancesAfter[i] = await STO.balanceOf(accounts[i]);
+    
+        assert.equal(balancesBefore[0].toString(), balancesAfter[0].add(totalTransferedAmount).toString());
+        for (let i = 1; i < accounts.length; i++)
+            assert.equal(balancesAfter[i].toString(), transferAmount[i].toString());
+    }
 
     beforeEach(async function() {
         IR = await IdentityRegistry.new({from: contractOwner});
@@ -66,32 +96,12 @@ contract('SecurityTokenDraft', (accounts) => {
         });
 
         it("should transfer from contract owner", async function() {
-            let transferAmount = new Array(accounts.length);
-            let totalTransferedAmount = tbn(0);
-            for (let i = 1; i < transferAmount.length; i++) {
-                let val = getRandom(1, totalSupply/accounts.length);
-                totalTransferedAmount = totalTransferedAmount.add(tbn(val));
-                transferAmount[i] = val;
-            }
-
-            let balancesBefore = new Array(accounts.length);
-            for (let i = 0; i < accounts.length; i++)
-                balancesBefore[i] = await STO.balanceOf(accounts[i]);
-
-            for (let i = 1; i < accounts.length; i++)
-                await STO.transfer(accounts[i], transferAmount[i], {from: contractOwner, gasPrice: gasPrice});
-
-            let balancesAfter = new Array(accounts.length);
-            for (let i = 0; i < accounts.length; i++)
-                balancesAfter[i] = await STO.balanceOf(accounts[i]);
-
-            assert.equal(balancesBefore[0].toString(), balancesAfter[0].add(totalTransferedAmount).toString());
-            for (let i = 1; i < accounts.length; i++)
-                assert.equal(balancesAfter[i].toString(), transferAmount[i].toString());
+                await Transfer(contractOwner);
         });
 
         it("should transferFrom not from contract owner", async function() {
-
+                // revert now
+                await Transfer(accounts[1]);
         });
 
     });
