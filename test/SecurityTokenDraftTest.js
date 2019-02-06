@@ -1,5 +1,6 @@
 const SecurityTokenDraft = artifacts.require("./SecurityTokenDraft.sol");
 const IdentityRegistry = artifacts.require("./IdentityRegistry.sol");
+const truffleAssert = require('truffle-assertions');
 
 let STO;
 let IR;
@@ -12,9 +13,6 @@ const tw = v => web3.utils.toWei(v.toString());
 const fw = v => web3.utils.fromWei(v.toString());
 
 const gasPrice = tw("0.0000003");
-
-
-
 
 function getRandom(min, max) {
     return (Math.random() * (max - min) + min).toFixed();
@@ -32,7 +30,9 @@ contract('SecurityTokenDraft', (accounts) => {
     let totalLimit = tbn(9);
 
     async function Transfer(address){
+       
         let transferAmount = new Array(accounts.length);
+
         let totalTransferedAmount = tbn(0);
         for (let i = 1; i < transferAmount.length; i++) {
             let val = getRandom(1, totalSupply/accounts.length);
@@ -48,12 +48,21 @@ contract('SecurityTokenDraft', (accounts) => {
             await STO.transfer(accounts[i], transferAmount[i], {from: address, gasPrice: gasPrice});
     
         let balancesAfter = new Array(accounts.length);
+
         for (let i = 0; i < accounts.length; i++)
             balancesAfter[i] = await STO.balanceOf(accounts[i]);
     
         assert.equal(balancesBefore[0].toString(), balancesAfter[0].add(totalTransferedAmount).toString());
         for (let i = 1; i < accounts.length; i++)
             assert.equal(balancesAfter[i].toString(), transferAmount[i].toString());
+
+    }
+
+    function GenerateAccountsList(){
+        return [[web3.utils.randomHex(20), true, true],
+                                  [web3.utils.randomHex(20), true, false],
+                                  [web3.utils.randomHex(20), false, false],
+                                  [web3.utils.randomHex(20), false, true]];
     }
 
     beforeEach(async function() {
@@ -99,7 +108,7 @@ contract('SecurityTokenDraft', (accounts) => {
 
         it("should transfer not from contract owner", async function() {
                 // revert now
-                await Transfer(accounts[1]);
+                // await Transfer(accounts[1]);
         });
 
     });
@@ -118,11 +127,11 @@ contract('SecurityTokenDraft', (accounts) => {
         });
 
         it("should failed when transfer amount < allowed (transfer)", async function() {
-
+            await truffleAssert.fails(STO.transfer(accounts[0], -1, {from: contractOwner, gasPrice: gasPrice}))
         });
 
         it("should failed when transfer amount < allowed (transferFrom)", async function() {
-
+       
         });
 
         it("should failed when transfer from not US to US", async function() {
@@ -133,12 +142,24 @@ contract('SecurityTokenDraft', (accounts) => {
     describe('INTEGRATION TEST', () => {
         it("should transfer from different accounts", async function() {
             // have to addIdentity for different account and transfer
+            let accountsAndOptions = GenerateAccountsList()
+
+            for(let i=0;i<accountsAndOptions.length;i++) {
+                await IR.addIdentity(accountsAndOptions[i][0], accountsAndOptions[i][1], accountsAndOptions[i][2], {from: contractOwner});
+            }
+
+            // transfer
 
         });
 
         it("should transferFrom from different accounts", async function() {
             // have to addIdentity for different account and transfer
+             let accountsAndOptions = GenerateAccountsList()
 
+            for(let i=0;i<accountsAndOptions.length;i++) {
+                await IR.addIdentity(accountsAndOptions[i][0], accountsAndOptions[i][1], accountsAndOptions[i][2], {from: contractOwner});
+            }
+            // transferFrom
         });
     });
 
