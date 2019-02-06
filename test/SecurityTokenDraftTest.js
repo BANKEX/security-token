@@ -127,6 +127,11 @@ contract('SecurityTokenDraft', (accounts) => {
             // have to addIdentity for different account and transfer
 
         });
+
+        it("should transferFrom from different accounts", async function() {
+            // have to addIdentity for different account and transfer
+
+        });
     });
 
 });
