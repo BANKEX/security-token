@@ -22,8 +22,6 @@ function getRandom(min, max) {
 
 contract('SecurityTokenDraft', (accounts) => {
 
-    
-
     let contractOwner = accounts[0];
     let symbol = "TST";
     let name = "TEST";
@@ -99,7 +97,7 @@ contract('SecurityTokenDraft', (accounts) => {
                 await Transfer(contractOwner);
         });
 
-        it("should transferFrom not from contract owner", async function() {
+        it("should transfer not from contract owner", async function() {
                 // revert now
                 await Transfer(accounts[1]);
         });
