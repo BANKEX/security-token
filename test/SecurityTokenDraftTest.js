@@ -19,18 +19,21 @@ function getRandom(min, max) {
 }
 
 contract('SecurityTokenDraft', (accounts) => {
+    let _limitUS = 5;
+    let _limitNotAccredited = 2;
+    let _limitTotal = 9;
 
     let contractOwner = accounts[0];
     let symbol = "TST";
     let name = "TEST";
     let totalSupply = tbn(1e20);
     let registry;
-    let limitUS = tbn(5);
-    let limitNotAccredited = tbn(2);
-    let totalLimit = tbn(9);
+    let limitUS = tbn(_limitUS);
+    let limitNotAccredited = tbn(_limitNotAccredited);
+    let totalLimit = tbn(_limitTotal);
 
     async function Transfer(address){
-       
+
         let transferAmount = new Array(accounts.length);
 
         let totalTransferedAmount = tbn(0);
@@ -39,42 +42,48 @@ contract('SecurityTokenDraft', (accounts) => {
             totalTransferedAmount = totalTransferedAmount.add(tbn(val));
             transferAmount[i] = val;
         }
-    
+
         let balancesBefore = new Array(accounts.length);
-        for (let i = 0; i < accounts.length; i++)
+        for (let i = 0; i < accounts.length; i++) {
             balancesBefore[i] = await STO.balanceOf(accounts[i]);
-    
-        for (let i = 1; i < accounts.length; i++)
+        }
+
+        for (let i = 1; i < accounts.length; i++) {
             await STO.transfer(accounts[i], transferAmount[i], {from: address, gasPrice: gasPrice});
-    
+        }
+
         let balancesAfter = new Array(accounts.length);
 
-        for (let i = 0; i < accounts.length; i++)
+        for (let i = 0; i < accounts.length; i++) {
             balancesAfter[i] = await STO.balanceOf(accounts[i]);
-    
+        }
+
         assert.equal(balancesBefore[0].toString(), balancesAfter[0].add(totalTransferedAmount).toString());
-        for (let i = 1; i < accounts.length; i++)
+        for (let i = 1; i < accounts.length; i++) {
             assert.equal(balancesAfter[i].toString(), transferAmount[i].toString());
+        }
 
     }
 
     function GenerateAccountsList(){
         return [[web3.utils.randomHex(20), true, true],
-                                  [web3.utils.randomHex(20), true, false],
-                                  [web3.utils.randomHex(20), false, false],
-                                  [web3.utils.randomHex(20), false, true]];
+        [web3.utils.randomHex(20), true, false],
+        [web3.utils.randomHex(20), false, false],
+        [web3.utils.randomHex(20), false, true]];
     }
 
     beforeEach(async function() {
         IR = await IdentityRegistry.new({from: contractOwner});
+        await IR.addIdentity(contractOwner, true, false);
+        await IR.bindAddress(contractOwner, contractOwner);
 
         symbol = "TST";
         name = "TEST";
         totalSupply = tbn(1e20);
         registry = IR.address;
-        limitUS = tbn(5);
-        limitNotAccredited = tbn(2);
-        totalLimit = tbn(9);
+        limitUS = tbn(_limitUS);
+        limitNotAccredited = tbn(_limitNotAccredited);
+        totalLimit = tbn(_limitTotal);
 
         STO = await SecurityTokenDraft.new(
             symbol,
@@ -85,7 +94,7 @@ contract('SecurityTokenDraft', (accounts) => {
             limitNotAccredited,
             totalLimit,
             {from: contractOwner}
-            );
+        );
     });
 
     describe('COMMON TEST', () => {
@@ -103,27 +112,49 @@ contract('SecurityTokenDraft', (accounts) => {
         });
 
         it("should transfer from contract owner", async function() {
-                await Transfer(contractOwner);
+            await Transfer(contractOwner);
         });
 
         it("should transfer not from contract owner", async function() {
-                // revert now
-                // await Transfer(accounts[1]);
+            // revert now
+            // await Transfer(accounts[1]);
         });
 
     });
 
     describe('NEGATIVE TEST', () => {
         it("should overflow limitTotal", async function() {
+            for (let i = 1; i <= _limitTotal; i++) {
+                await IR.addIdentity(accounts[i], false, true);
+                await IR.bindAddress(accounts[i], accounts[i]);
+            }
+            for (let i = 1; i < _limitTotal; i++) {
+                await STO.transfer(accounts[i], tbn(1), {from: contractOwner, gasPrice: gasPrice});
+            }
 
+            await truffleAssert.fails(STO.transfer(accounts[_limitTotal], tbn(1), {from: contractOwner, gasPrice: gasPrice}));
         });
 
         it("should overflow limitNotAccredited", async function() {
-
+            for (let i = 1; i <= _limitNotAccredited; i++) {
+                await IR.addIdentity(accounts[i], false, false);
+                await IR.bindAddress(accounts[i], accounts[i]);
+            }
+            for (let i = 1; i < _limitNotAccredited; i++) {
+                await STO.transfer(accounts[i], tbn(1), {from: contractOwner, gasPrice: gasPrice});
+            }
+            await truffleAssert.fails(STO.transfer(accounts[_limitNotAccredited], tbn(1), {from: contractOwner, gasPrice: gasPrice}));
         });
 
         it("should overflow limitUS", async function() {
-
+            for (let i = 1; i <= _limitUS; i++) {
+                await IR.addIdentity(accounts[i], true, true);
+                await IR.bindAddress(accounts[i], accounts[i]);
+            }
+            for (let i = 1; i < _limitUS; i++) {
+                await STO.transfer(accounts[i], tbn(1), {from: contractOwner, gasPrice: gasPrice});
+            }
+            await truffleAssert.fails(STO.transfer(accounts[_limitUS], tbn(1), {from: contractOwner, gasPrice: gasPrice}));
         });
 
         it("should failed when transfer amount < allowed (transfer)", async function() {
@@ -131,11 +162,21 @@ contract('SecurityTokenDraft', (accounts) => {
         });
 
         it("should failed when transfer amount < allowed (transferFrom)", async function() {
-       
+            await IR.addIdentity(accounts[1], false, false);
+            await IR.bindAddress(accounts[1], accounts[1]);
+
+            await STO.approve(accounts[1], tbn(2), {from: contractOwner, gasPrice: gasPrice});
+            await STO.transferFrom(contractOwner, accounts[1], tbn(2), {from: accounts[1], gasPrice: gasPrice});
+
+            await STO.approve(accounts[1], tbn(2), {from: contractOwner, gasPrice: gasPrice});
+            await truffleAssert.fails(STO.transferFrom(contractOwner, accounts[1], tbn(3), {from: accounts[1], gasPrice: gasPrice}));
         });
 
         it("should failed when transfer from not US to US", async function() {
-
+            await STO.transfer(accounts[2], tbn(1), {from: contractOwner, gasPrice: gasPrice})
+            await IR.addIdentity(accounts[1], true, true);
+            await IR.bindAddress(accounts[1], accounts[1]);
+            await truffleAssert.fails(STO.transfer(accounts[1], tbn(1), {from: accounts[2], gasPrice: gasPrice}));
         });
     });
 
@@ -154,7 +195,7 @@ contract('SecurityTokenDraft', (accounts) => {
 
         it("should transferFrom from different accounts", async function() {
             // have to addIdentity for different account and transfer
-             let accountsAndOptions = GenerateAccountsList()
+            let accountsAndOptions = GenerateAccountsList()
 
             for(let i=0;i<accountsAndOptions.length;i++) {
                 await IR.addIdentity(accountsAndOptions[i][0], accountsAndOptions[i][1], accountsAndOptions[i][2], {from: contractOwner});
@@ -164,4 +205,3 @@ contract('SecurityTokenDraft', (accounts) => {
     });
 
 });
-
