@@ -20,7 +20,7 @@ function getRandom(min, max) {
 
 contract('SecurityTokenDraft', (accounts) => {
     let _limitUS = 5;
-    let _limitNotAccredited = 2;
+    let _limitNotAccredited = 4;
     let _limitTotal = 9;
 
     let contractOwner = accounts[0];
@@ -65,11 +65,11 @@ contract('SecurityTokenDraft', (accounts) => {
 
     }
 
-    function GenerateAccountsList(){
-        return [[web3.utils.randomHex(20), true, true],
-        [web3.utils.randomHex(20), true, false],
-        [web3.utils.randomHex(20), false, false],
-        [web3.utils.randomHex(20), false, true]];
+    function GenerateAccountsList() {
+        return [[accounts[1], true, true],
+                [accounts[2], true, false],
+                [accounts[3], false, false],
+                [accounts[4], false, true]];
     }
 
     beforeEach(async function() {
@@ -183,24 +183,41 @@ contract('SecurityTokenDraft', (accounts) => {
     describe('INTEGRATION TEST', () => {
         it("should transfer from different accounts", async function() {
             // have to addIdentity for different account and transfer
-            let accountsAndOptions = GenerateAccountsList()
+            let options = GenerateAccountsList()
 
-            for(let i=0;i<accountsAndOptions.length;i++) {
-                await IR.addIdentity(accountsAndOptions[i][0], accountsAndOptions[i][1], accountsAndOptions[i][2], {from: contractOwner});
+            for(let i=0;i<options.length;i++) {
+                let account = options[i][0]
+                let isUS = options[i][1]
+                let isAccredited = options[i][2]
+                await IR.addIdentity(account, isUS, isAccredited, {from: contractOwner});
+                await IR.bindAddress(account, account, {from: contractOwner});
             }
 
             // transfer
-
+            for(let i=0;i<options.length;i++) {
+                let account = options[i][0];
+                await STO.transfer(account, tbn(1), {from: contractOwner});
+            }
         });
 
         it("should transferFrom from different accounts", async function() {
             // have to addIdentity for different account and transfer
-            let accountsAndOptions = GenerateAccountsList()
+            let options = GenerateAccountsList()
 
-            for(let i=0;i<accountsAndOptions.length;i++) {
-                await IR.addIdentity(accountsAndOptions[i][0], accountsAndOptions[i][1], accountsAndOptions[i][2], {from: contractOwner});
+            for(let i=0;i<options.length;i++) {
+                let account = options[i][0]
+                let isUS = options[i][1]
+                let isAccredited = options[i][2]
+                await IR.addIdentity(account, isUS, isAccredited, {from: contractOwner});
+                await IR.bindAddress(account, account, {from: contractOwner});
             }
-            // transferFrom
+
+            // transfer
+            for(let i=0;i<options.length;i++) {
+                let account = options[i][0];
+                await STO.approve(account, tbn(1), {from: contractOwner, gasPrice: gasPrice});
+                await STO.transferFrom(contractOwner, account, tbn(1), {from: account});
+            }
         });
     });
 
