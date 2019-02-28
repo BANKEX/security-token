@@ -9,7 +9,8 @@ contract DividendToken is ERC20Detailed, ERC20 {
   event ReleaseDividendsRights(address indexed to, uint value);
   event AcceptDividends(uint value);
 
-  constructor(string memory name, string memory symbol) ERC20Detailed(name, symbol, 18) public{
+  constructor(string memory name, string memory symbol, uint totalSupply) ERC20Detailed(name, symbol, 18) public{
+    _mint(msg.sender, totalSupply);
   }
 
 
@@ -32,7 +33,8 @@ contract DividendToken is ERC20Detailed, ERC20 {
     uint dividendsRights = _dividendsRightsOf(to);
     require(dividendsRights >= value);
     _dividendsRightsFix[to] -= value;
-    to.transfer(value);
+    /*here is no reentrancy*/
+    to.call.gas(200000).value(value)("");
     emit ReleaseDividendsRights(to, value);
     return true;
   }

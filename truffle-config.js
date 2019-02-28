@@ -1,5 +1,7 @@
-require('dotenv').config();
-
+const env = process.env;
+if (env.NODE_ENV !== 'production') {
+  require('dotenv').load();
+}
 
 const HDWalletProvider = require('truffle-hdwallet-provider');
 
@@ -8,7 +10,7 @@ const providerWithMnemonic = (mnemonic, rpcEndpoint) =>
 
 const infuraProvider = network => providerWithMnemonic(
   process.env.MNEMONIC || '',
-  `https://${network}.infura.io/${process.env.INFURA_API_KEY}`
+  `https://${network}.infura.io/`
 );
 
 const ropstenProvider = process.env.SOLIDITY_COVERAGE
@@ -54,5 +56,11 @@ module.exports = {
       port: 8545,
       network_id: '*', // eslint-disable-line camelcase
     },
+    rinkeby: {
+      provider: infuraProvider("rinkeby"),
+      network_id: 4,
+      gas: 4612388,
+      gasPrice: 20000000000,
+  }
   },
 };
