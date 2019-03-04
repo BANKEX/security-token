@@ -46,6 +46,7 @@ module.exports = {
     ropsten: {
       provider: new HDWalletProvider(process.env.MNEMONIC, "https://ropsten.infura.io/", 0, 10),
       network_id: 3, // eslint-disable-line camelcase
+      skipDryRun: true
     },
     coverage: {
       host: 'localhost',
@@ -67,10 +68,12 @@ module.exports = {
     rinkeby: {
       provider: new HDWalletProvider(process.env.MNEMONIC, "https://rinkeby.infura.io/", 0, 10),
       network_id: 4,
+      skipDryRun: true
     },
     sokol: {
       provider: new HDWalletProvider(process.env.MNEMONIC, "https://sokol.poa.network/", 0, 10),
-      network_id: "*" // Match any network id
+      network_id: "*", // Match any network id
+      skipDryRun: true
     }
   },
 };
