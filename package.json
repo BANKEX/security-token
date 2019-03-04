@@ -44,15 +44,18 @@
     "ethereumjs-util": "^5.1.2",
     "openzeppelin-solidity": "2.1.1",
     "solc": "0.5.2",
-    "solidity-coverage": "^0.4.3",
+    "solidity-coverage": "^0.5.11",
     "solium": "^1.1.2",
     "truffle": "^5.0.1"
-
   },
   "dependencies": {
-    "dotenv": "^6.2.0", 
+    "args-parser": "^1.1.0",
+    "bip39": "^2.5.0",
+    "dotenv": "^6.2.0",
+    "ethereumjs-wallet": "^0.6.3",
     "ethjs-abi": "^0.2.1",
     "truffle-assertions": "^0.7.2",
-    "truffle-hdwallet-provider": "^1.0.0-web3one.4"
+    "truffle-hdwallet-provider": "^1.0.0-web3one.4",
+    "web3": "^1.0.0-beta.46"
   }
 }

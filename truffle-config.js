@@ -5,17 +5,25 @@ if (env.NODE_ENV !== 'production') {
 
 const HDWalletProvider = require('truffle-hdwallet-provider');
 
-const providerWithMnemonic = (mnemonic, rpcEndpoint) =>
-  new HDWalletProvider(mnemonic, rpcEndpoint);
 
-const infuraProvider = network => providerWithMnemonic(
-  process.env.MNEMONIC || '',
-  `https://${network}.infura.io/`
-);
 
-const ropstenProvider = process.env.SOLIDITY_COVERAGE
-  ? undefined
-  : infuraProvider('ropsten');
+function generateKeysFromSeed(seed, count) {
+  let bip39 = require("bip39");
+  let hdkey = require('ethereumjs-wallet/hdkey');
+  let hdwallet = hdkey.fromMasterSeed(bip39.mnemonicToSeed(seed));
+  let wallet_hdpath = "m/44'/60'/0'/0/";
+
+  let accounts = [];
+  for (let i = 0; i < count; i++) {
+
+      let wallet = hdwallet.derivePath(wallet_hdpath + i).getWallet();
+      let address = '0x' + wallet.getAddress().toString("hex");
+      let privateKey = wallet.getPrivateKey().toString("hex");
+      accounts.push(privateKey);
+  }
+
+  return accounts;
+}
 
 module.exports = {
   compilers: {
@@ -36,8 +44,9 @@ module.exports = {
       network_id: '*', // eslint-disable-line camelcase
     },
     ropsten: {
-      provider: ropstenProvider,
+      provider: new HDWalletProvider(process.env.MNEMONIC, "https://ropsten.infura.io/", 0, 10),
       network_id: 3, // eslint-disable-line camelcase
+      skipDryRun: true
     },
     coverage: {
       host: 'localhost',
@@ -57,10 +66,14 @@ module.exports = {
       network_id: '*', // eslint-disable-line camelcase
     },
     rinkeby: {
-      provider: infuraProvider("rinkeby"),
+      provider: new HDWalletProvider(process.env.MNEMONIC, "https://rinkeby.infura.io/", 0, 10),
       network_id: 4,
-      gas: 4612388,
-      gasPrice: 20000000000,
-  }
+      skipDryRun: true
+    },
+    sokol: {
+      provider: new HDWalletProvider(process.env.MNEMONIC, "https://sokol.poa.network/", 0, 10),
+      network_id: "*", // Match any network id
+      skipDryRun: true
+    }
   },
 };
