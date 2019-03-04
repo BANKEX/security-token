@@ -1,15 +1,21 @@
 pragma solidity >=0.5.2;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/math/Math.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
+import "./ERC20Interface.sol";
 
 
-contract DividendToken is ERC20Detailed, ERC20 {
+contract DividendTokenAcceptingUtility is ERC20, ERC20Detailed {
   event ReleaseDividendsRights(address indexed to, uint value);
   event AcceptDividends(address indexed from, uint value);
 
-  constructor(string memory name, string memory symbol, uint totalSupply) ERC20Detailed(name, symbol, 18) public{
+  ERC20Interface public utility;
+  
+
+  constructor(string memory name, string memory symbol, uint totalSupply, address utility_) ERC20Detailed(name, symbol, 18) public{
     _mint(msg.sender, totalSupply);
+    utility = ERC20Interface(utility_);
   }
 
 
@@ -28,13 +34,12 @@ contract DividendToken is ERC20Detailed, ERC20 {
   }
 
 
-  function _releaseDividendsRights(address payable to, uint value) internal returns(bool) {
+  function _releaseDividendsRights(address to, uint value) internal returns(bool) {
     uint dividendsRights = _dividendsRightsOf(to);
     require(dividendsRights >= value);
     _dividendsRightsFix[to] -= value;
     /*here is no reentrancy*/
-    (bool success, bytes memory data) = to.call.gas(200000).value(value)("");
-    require(success);
+    utility.increaseAllowance(to, value);
     emit ReleaseDividendsRights(to, value);
     return true;
   }
@@ -78,23 +83,25 @@ contract DividendToken is ERC20Detailed, ERC20 {
 
   /**
    * @dev Transfer tokens from one address to another
-   * @param _from address The address which you want to send tokens from
-   * @param _to address The address which you want to transfer to
-   * @param _value uint the amount of tokens to be transferred
+   * @param from address The address which you want to send tokens from
+   * @param to address The address which you want to transfer to
+   * @param value uint the amount of tokens to be transferred
    */
-  function transferFrom(address _from, address _to, uint _value) public returns (bool) {
-    _dividendsRightsFixUpdate(_from, _to, _value);
-    ERC20.transferFrom(_from, _to, _value);
+  function transferFrom(address from, address to, uint value) public returns (bool) {
+    _dividendsRightsFixUpdate(from, to, value);
+    ERC20.transferFrom(from, to, value);
     return true;
   }
 
 
-
-  function () external payable {
+  function acceptDividends(address from, uint value) external returns(bool) {
     require(totalSupply() > 0);
-    _dividendsPerToken = _dividendsPerToken.add(msg.value.mul(DECIMAL_MULTIPLIER)/totalSupply());
+    _dividendsPerToken = _dividendsPerToken.add(value.mul(DECIMAL_MULTIPLIER)/totalSupply());
     require(_dividendsPerToken.mul(totalSupply()) <= INT256_MAX);
-    emit AcceptDividends(msg.sender, msg.value);
+
+    require(utility.transferFrom(from, address(this), value));
+    emit AcceptDividends(from, value);
+    return true;
   }
 }
 
