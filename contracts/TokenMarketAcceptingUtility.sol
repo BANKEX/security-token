@@ -19,7 +19,7 @@ contract TokenMarketAcceptingUtility is Ownable {
   
   uint constant DECIMAL_MULTIPLIER = 1e18;
 
-  constructor(address utility_, address security_, address securityStorage_, address utilityStorage_, uint price_) public {
+  constructor(address utility_, address security_, address utilityStorage_, address securityStorage_, uint price_) public {
     utility = ERC20Interface(utility_);
     security = ERC20Interface(security_);
     securityStorage = securityStorage_;

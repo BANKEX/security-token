@@ -44,8 +44,7 @@ contract DividendTokenAcceptingUtility is ERC20, ERC20Detailed {
     return true;
   }
 
-
-  function releaseDividendsRights(address payable to, uint value) public returns(bool) {
+  function releaseDividendsRights(address to, uint value) public returns(bool) {
     return _releaseDividendsRights(to, value);
   }
 
