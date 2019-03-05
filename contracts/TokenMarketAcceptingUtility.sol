@@ -19,6 +19,10 @@ contract TokenMarketAcceptingUtility is Ownable {
   
   uint constant DECIMAL_MULTIPLIER = 1e18;
 
+  event Buy(address indexed sender, uint securityAmount, uint price);
+  event Sell(address indexed sender, uint securityAmount, uint price);
+  
+
   constructor(address utility_, address security_, address utilityStorage_, address securityStorage_, uint price_) public {
     utility = ERC20Interface(utility_);
     security = ERC20Interface(security_);
@@ -35,14 +39,24 @@ contract TokenMarketAcceptingUtility is Ownable {
     return Math.min(security.allowance(securityStorage, address(this)), security.balanceOf(securityStorage));
   }
 
-  function exchange(uint securityAmount, uint price_) public returns(bool) {
+  function buy(uint securityAmount, uint price_) public returns(bool) {
     require(price_ == price);
     require(securityAmount <= securityBalance());
     uint utilityAmount = securityAmount.mul(price).div(DECIMAL_MULTIPLIER);
     require(utility.transferFrom(msg.sender, utilityStorage, utilityAmount));
     require(security.transferFrom(securityStorage, msg.sender, securityAmount));
+    emit Buy(msg.sender, securityAmount, price_);
     return true;
   }
 
+  function sell(uint securityAmount, uint price_) public returns(bool) {
+    require(price_ == price);
+    require(securityAmount <= securityBalance());
+    uint utilityAmount = securityAmount.mul(price).div(DECIMAL_MULTIPLIER);
+    require(utility.transferFrom(utilityStorage, msg.sender, utilityAmount));
+    require(security.transferFrom(msg.sender, securityStorage, securityAmount));
+    emit Sell(msg.sender, securityAmount, price_);
+    return true;
+  }
 
 }
